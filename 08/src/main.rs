@@ -1,7 +1,7 @@
 use std::io;
 use std::io::Read;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum Dir {
     Up,
     Down,
@@ -55,42 +55,26 @@ fn scenic_score((i, j): (usize, usize), pts: &Vec<Vec<u8>>) -> usize {
     viewing_distance(dir, (i, j), &pts)).product()
 }
 
+fn iters(dir: Dir, (i, j): (usize, usize), pts: &Vec<Vec<u8>>) -> Box<dyn Iterator<Item=(usize, usize)>> {
+    if dir == Dir::Up {
+        return Box::new((0..i).rev().map(move |n| (n, j)));
+    } else if dir == Dir::Down {
+        return Box::new(((i+1)..pts.len()).map(move |n| (n, j)));
+    } else if dir == Dir::Left {
+        return Box::new((0..j).rev().map(move |m| (i, m)));
+    } else {
+        return Box::new(((j+1)..pts[i].len()).map(move |m| (i, m)));
+    }
+}
+
 fn viewing_distance(dir: Dir, (i, j): (usize, usize), pts: &Vec<Vec<u8>>) -> usize {
     let height = pts[i][j];
     let mut distance = 0;
-    match dir {
-        Dir::Up => {
-            for n in (0..i).rev() {
-                distance += 1;
-                if pts[n][j] >= height {
-                    break;
-                } 
-            }
-        },
-        Dir::Down => {
-            for n in (i+1)..pts.len() {
-                distance += 1;
-                if pts[n][j] >= height {
-                    break;
-                } 
-            }
-        },
-        Dir::Left => {
-            for m in (0..j).rev() {
-                distance += 1;
-                if pts[i][m] >= height {
-                    break;
-                } 
-            }
-        },
-        Dir::Right => {
-            for m in (j+1)..pts[i].len() {
-                distance += 1;
-                if pts[i][m] >= height {
-                    break;
-                } 
-            }
-        },
+    for (m, n) in iters(dir, (i, j), pts) {
+        distance += 1;
+        if pts[m][n] >= height {
+            break;
+        } 
     }
     distance
 }
@@ -99,35 +83,10 @@ fn visible_from(dir: Dir, pt: &(usize, usize), pts: &Vec<Vec<u8>>) -> bool {
     let i = pt.0;
     let j = pt.1;
     let height = pts[i][j];
-    match dir {
-        Dir::Up => {
-            for n in 0..i {
-                if pts[n][j] >= height {
-                    return false;
-                } 
-            }
-        },
-        Dir::Down => {
-            for n in (i+1)..pts.len() {
-                if pts[n][j] >= height {
-                    return false;
-                } 
-            }
-        },
-        Dir::Left => {
-            for m in 0..j {
-                if pts[i][m] >= height {
-                    return false;
-                } 
-            }
-        },
-        Dir::Right => {
-            for m in (j+1)..pts[i].len() {
-                if pts[i][m] >= height {
-                    return false;
-                } 
-            }
-        },
+    for (m, n) in iters(dir, (i, j), pts) {
+        if pts[m][n] >= height {
+            return false;
+        }
     }
     true
 }
