@@ -1,0 +1,16 @@
+strict graph test {
+    AA[label="0. AA(0)"];
+    BB[label="2. BB(13)"];
+    CC[label="6. CC(2)"];
+    DD[label="1. DD(20)"];
+    EE[label="5. EE(3)"];
+    HH[label="4. HH(22)"];
+    JJ[label="3. JJ(21)"];
+    AA--BB[label="1"];
+    AA--DD[label="1"];
+    AA--JJ[label="2"];
+    CC--BB[label="1"];
+    CC--DD[label="1"];
+    EE--DD[label="1"];
+    EE--HH[label="3"];
+}
